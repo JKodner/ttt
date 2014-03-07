@@ -10,9 +10,9 @@ from os import system
 Strategy: 
 1. Winning Move
 2. Block User Win,
-3. Corners
-4. Edges
-5. Center
+3. Corners - 4, 2, 6, 8
+4. Edges - 9, 7, 1, 3
+5. Center - 5
 """
 
 def pboard():
@@ -29,6 +29,43 @@ def check(p_lst):
 		if sum(i) == 15:
 			token = True
 	return token
+
+def findmove(sig):
+	winmove = []
+	token = False
+	for i in combinations(range(1, 10), 2):
+		diff = 15 - sum(i)
+		if 1 <= diff <= 9:
+			if diff not in i:
+				if board[diff] == " ":
+					if board[i[0]] == sig and board[i[1]] == sig:
+						winmove.append(diff)
+						token = True
+						break
+	if token:
+		obj = {"place": winmove[0], "token": token}
+	if not token:
+		obj = {"token": token}
+	return obj
+
+def findplace(place):
+	move = []
+	token = False
+	if place == "corner":
+		selected = [4, 2, 6, 8]
+	elif place == "edge":
+		selected = [9, 7, 1, 3]
+	for i in selected:
+		if board[i] == " ":
+			token = True
+			move.append(i)
+			break
+	if token:
+		obj = {"place": move[0], "token": token}
+	if not token:
+		obj = {"token": token}
+	return obj
+
 
 board = {}
 for i in range(1, 10):
@@ -53,9 +90,10 @@ raw_input("Press Anything to Continue: ")
 count = 1
 user = []
 computer = []
+unneed = []
 gamewin = False
 
-while count < 10:
+while True:
 	system('clear')
 	
 	pboard()
@@ -68,35 +106,41 @@ while count < 10:
 		turn = "Computer"
 		lst = computer
 	
-	if turn == "User":	
-		# place = int(raw_input("Turn: %s, %s-%s: " % (turn, count, sign)))
-		# lst.append(inputs[place])
-		# board[inputs[place]] = sign
-		pass
+	if turn == "User":
+			place = int(raw_input("Turn: %s, %s-%s: " % (turn, count, sign)))
+			lst.append(inputs[place])
+			board[inputs[place]] = sign
 		
 
 	elif turn == "Computer":
-		go = raw_input("Go? ")
-		if go == "y":
-			winmove = []
-			token = False
-			for i in combinations(range(1, 10), 2):
-				diff = 15 - sum(i)
-				if 1 <= diff <= 8:
-					if diff not in i:
-						if board[diff] == " ":
-							if board[i[0]] == "O" and board[i[1]] == "O":
-								winmove.append(diff)
-								token = True
-								break
-			if token:
-				place = winmove[0]
-				lst.append(place)
-				board[place] = sign
+		called_1 = findmove("O")
+		called_2 = findmove("X")
+		if called_1["token"] or called_2["token"]:
+			if called_1["token"]:
+				chosen = called_1
+			elif called_2["token"]:
+				chosen = called_2
+			place = chosen["place"]
+			lst.append(place)
+			board[place] = sign
 		else:
-			place = int(go)
-			lst.append(inputs[place])
-			board[inputs[place]] = sign
+			move_1 = findplace("corner")
+			move_2 = findplace("edge")
+			if move_1["token"] or move_2["token"]:
+				if move_1["token"]:
+					chosen = move_1
+				elif move_2["token"]:
+					chosen = move_2
+				place = chosen["place"]
+				
+			elif board[5] == " ":
+				place = 5
+				
+			lst.append(place)
+			board[place] = sign
+		system('clear')
+		pboard()
+		raw_input("Press Anything to Continue")
 
 	count += 1
 	if check(lst):
